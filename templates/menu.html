@@ -13,7 +13,7 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" 
         integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 
-<title>stonk</title>
+        <title>stonk</title>
     </head>
 
 
@@ -21,6 +21,8 @@
       <ul>
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
     <li><a href="{{ url_for('index') }}">home</a></li>
+    <li><a href="{{ url_for('create') }}">drop a meme</a></li>
+    <li style="float: right;"><a href="{{ url_for('profile') }}">profile</a></li>
 
     </ul>
 
