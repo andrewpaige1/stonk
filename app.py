@@ -60,9 +60,18 @@ def register():
 @app.route('/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'POST' and 'photo' in request.files:
+        photo = request.files['photo']
+        if photo.filename == '':
+            return render_template('create.html', message="please post a valid file")
+        price = request.form['price']
+        if price.isnumeric():
+            price = int(price)
+        else:
+            return render_template('create.html', message="please enter a valid number")
+        caption = request.form['caption']
         filename = meme_folder.save(request.files['photo'], folder=session['username'])
         return redirect(url_for('index'))
-    return render_template('create.html')
+    return render_template('create.html', message="")
 
 @app.route('/profile')
 def profile():
