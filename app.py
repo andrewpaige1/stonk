@@ -1,25 +1,36 @@
-from flask import Flask, render_template, url_for, request, session, redirect
+from flask import Flask, render_template, url_for, request, session, redirect, send_from_directory, abort
 from flask_pymongo import PyMongo
 import bcrypt
 from flask_cors import CORS
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
 import datetime
-
+from bson.json_util import dumps
+import json
+#import os
 app = Flask('app')
 app.config.from_pyfile('config.cfg')
 mongo = PyMongo(app)
 CORS(app)
 patch_request_class(app, 32 * 1024 * 1024)
 
-app.config['MEME_UPLOADS'] = 'static'
-meme_folder = UploadSet('meme', IMAGES, default_dest=lambda app: 'static')
+app.config['MEME_UPLOADS'] = 'static/img'
+meme_folder = UploadSet('meme', IMAGES, default_dest=lambda app: app.config['MEME_UPLOADS'])
 configure_uploads(app, meme_folder)
 
 
 @app.route('/')
 def index():
     if 'username' in session:
-        return render_template('home.html', user=session['username'])
+        posts = mongo.db.posts
+        all_docs = posts.find({})
+        all_docs_string = dumps(all_docs)
+        all_docs2 = json.loads(all_docs_string)
+        users = mongo.db.users
+        all_users = posts.find({})
+        all_users_string = dumps(all_users)
+        all_users2 = json.loads(all_users_string)
+        #posts = os.listdir(app.config['MEME_UPLOADS'])
+        return render_template('home.html', user=session['username'], post_data=all_docs2)
     return render_template('index.html')
 
 
@@ -71,19 +82,42 @@ def create():
             float(price)
         except ValueError:
             return render_template('create.html', message="please enter a valid number")
+        
+        dot = photo.filename.index('.')
+        photo_type = photo.filename[dot::]
         meme_name = request.form['memeName']
-        existing_meme = posts.find_one({'memeName': meme_name})
+        existing_meme = posts.find_one({'memeName': meme_name+photo_type})
+
         if existing_meme is None:
             now = datetime.datetime.now()
-           # print(photo.filename)
-            dot = photo.filename.index('.')+1
-            photo_type = photo.filename[dot::]
-            meme_folder.save(request.files['photo'], folder=session['username'], name=meme_name + '.')
-            posts.insert_one({'memeName': meme_name+photo_type, 'price': price, 'date': now.hour, 'bought': 0, 'sold': 0})
+            meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
+            posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name})
             return redirect(url_for('index'))
         return render_template('create.html', message="meme name already exists!")
     return render_template('create.html', message="")
 
+
+
+
+
+@app.route('/getPhotoNames')
+def get_photos_names():
+    posts = mongo.db.posts
+    all_docs = posts.find({})
+    all_docs_string = dumps(all_docs)
+    all_docs2 = json.loads(all_docs_string)
+
+    return {'photoNames': all_docs2}
+
+
+
+@app.route('/sendImage/<image_name>')
+def send_image(image_name):
+    try:
+        return send_from_directory(app.config["MEME_UPLOADS"], filename=image_name, as_attachment=False)
+    except FileNotFoundError:
+        abort(404)
+    return 'success'
 
 @app.route('/profile')
 def profile():

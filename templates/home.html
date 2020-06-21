@@ -1,5 +1,37 @@
 {% extends "menu.html" %}
 
 {% block body %}
-home
+{% for post in post_data|reverse %}
+<div style="padding-top: 5%;" class="d-flex justify-content-center">
+
+      <div style="width: 25%;" class="card">
+        <div class="card-header">
+          {{post.regName}}
+        </div>
+        <img class="card-img-top" 
+        src="{{url_for('static', filename='img/'+post.owner+'/'+post.memeName)}}" 
+        alt="{{post.memeName}}">
+        <div class="card-body">
+          <h5 class="card-title">price: {{post.price}} monies</h5>
+          <p class="card-text">{{post.owner}}</p>
+          <a href="#" class="btn btn-primary btn-block">buy</a>
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+{% endfor %}
 {% endblock %}
