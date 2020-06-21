@@ -1,10 +1,9 @@
 from flask import Flask, render_template, url_for, request, session, redirect
 from flask_pymongo import PyMongo
 import bcrypt
-from bson.json_util import loads, dumps
-import json
 from flask_cors import CORS
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
+import datetime
 
 app = Flask('app')
 app.config.from_pyfile('config.cfg')
@@ -27,7 +26,7 @@ def index():
 @app.route('/login', methods=['POST'])
 def login():
     users = mongo.db.users
-    login_user = users.find_one({'name' : request.form['username']})
+    login_user = users.find_one({'name': request.form['username']})
 
     if login_user:
         if bcrypt.hashpw(request.form['pass'].encode('utf-8'), login_user['password']) == login_user['password']:
@@ -36,26 +35,29 @@ def login():
 
     return redirect(url_for('index'))
 
+
 @app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return redirect(url_for('index'))
 
+
 @app.route('/register', methods=['POST', 'GET'])
 def register():
     if request.method == 'POST':
         users = mongo.db.users
-        existing_user = users.find_one({'name' : request.form['username']})
+        existing_user = users.find_one({'name': request.form['username']})
 
         if existing_user is None:
             hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt())
-            users.insert_one({'name' : request.form['username'], 'password' : hashpass})
+            users.insert_one({'name': request.form['username'], 'password': hashpass})
             session['username'] = request.form['username']
             return redirect(url_for('index'))
-        
+
         return render_template('register.html', message="This name is already taken!")
 
     return render_template('register.html', message="")
+
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
@@ -63,15 +65,25 @@ def create():
         photo = request.files['photo']
         if photo.filename == '':
             return render_template('create.html', message="please post a valid file")
+        posts = mongo.db.posts
         price = request.form['price']
-        if price.isnumeric():
-            price = int(price)
-        else:
+        try:
+            float(price)
+        except ValueError:
             return render_template('create.html', message="please enter a valid number")
-        caption = request.form['caption']
-        filename = meme_folder.save(request.files['photo'], folder=session['username'])
-        return redirect(url_for('index'))
+        meme_name = request.form['memeName']
+        existing_meme = posts.find_one({'memeName': meme_name})
+        if existing_meme is None:
+            now = datetime.datetime.now()
+           # print(photo.filename)
+            dot = photo.filename.index('.')+1
+            photo_type = photo.filename[dot::]
+            meme_folder.save(request.files['photo'], folder=session['username'], name=meme_name + '.')
+            posts.insert_one({'memeName': meme_name+photo_type, 'price': price, 'date': now.hour, 'bought': 0, 'sold': 0})
+            return redirect(url_for('index'))
+        return render_template('create.html', message="meme name already exists!")
     return render_template('create.html', message="")
+
 
 @app.route('/profile')
 def profile():
