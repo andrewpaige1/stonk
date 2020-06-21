@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, session, redirect, send_from_directory, abort
+from flask import Flask, render_template, url_for, request, session, redirect
 from flask_pymongo import PyMongo
 import bcrypt
 from flask_cors import CORS
@@ -87,37 +87,26 @@ def create():
         photo_type = photo.filename[dot::]
         meme_name = request.form['memeName']
         existing_meme = posts.find_one({'memeName': meme_name+photo_type})
-
+        if request.form['totalShares'].isnumeric():
+            totalShares = int(request.form['totalShares'])
+        else:
+            return render_template('create.html', message="please enter a valid number of shares")
         if existing_meme is None:
             now = datetime.datetime.now()
             meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
-            posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name})
+            posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
             return redirect(url_for('index'))
         return render_template('create.html', message="meme name already exists!")
     return render_template('create.html', message="")
 
-
-
-
-
-@app.route('/getPhotoNames')
-def get_photos_names():
+@app.route('/changePrice', methods=['GET', 'POST'])
+def change_price():
     posts = mongo.db.posts
-    all_docs = posts.find({})
-    all_docs_string = dumps(all_docs)
-    all_docs2 = json.loads(all_docs_string)
+    all_posts = posts.find({})
+    all_posts_string = dumps(all_posts)
+    all_posts2 = json.loads(all_posts_string)
+    return {'status': 'sucess'}
 
-    return {'photoNames': all_docs2}
-
-
-
-@app.route('/sendImage/<image_name>')
-def send_image(image_name):
-    try:
-        return send_from_directory(app.config["MEME_UPLOADS"], filename=image_name, as_attachment=False)
-    except FileNotFoundError:
-        abort(404)
-    return 'success'
 
 @app.route('/profile')
 def profile():
