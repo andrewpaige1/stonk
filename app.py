@@ -25,10 +25,6 @@ def index():
         all_docs = posts.find({})
         all_docs_string = dumps(all_docs)
         all_docs2 = json.loads(all_docs_string)
-        users = mongo.db.users
-        all_users = posts.find({})
-        all_users_string = dumps(all_users)
-        all_users2 = json.loads(all_users_string)
         #posts = os.listdir(app.config['MEME_UPLOADS'])
         return render_template('home.html', user=session['username'], post_data=all_docs2)
     return render_template('index.html')
@@ -79,7 +75,7 @@ def create():
         posts = mongo.db.posts
         price = request.form['price']
         try:
-            float(price)
+            price = float(price)
         except ValueError:
             return render_template('create.html', message="please enter a valid number")
         
@@ -94,7 +90,8 @@ def create():
         if existing_meme is None:
             now = datetime.datetime.now()
             meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
-            posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
+            posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 
+            'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares, 'prevBuys': 0, 'prevSells': 0})
             return redirect(url_for('index'))
         return render_template('create.html', message="meme name already exists!")
     return render_template('create.html', message="")
@@ -106,6 +103,17 @@ def change_price():
     all_posts_string = dumps(all_posts)
     all_posts2 = json.loads(all_posts_string)
     return {'status': 'sucess'}
+
+@app.route('/buy/<meme_name>', methods=['GET', 'POST'])
+def buy(meme_name):
+    post = mongo.db.posts    
+    post_to_update = post.find_one({'memeName': meme_name})
+    if post_to_update['totalShares'] > 0:
+        post.update_one({'memeName': meme_name}, {'$inc': {'bought': 1, 'totalShares': -1}})
+    updated_post = post.find_one({'memeName': meme_name})
+    post_update_string = dumps(updated_post)
+    post_to_update2 = json.loads(post_update_string)
+    return {'postToUpdate': post_to_update2}
 
 
 @app.route('/profile')
