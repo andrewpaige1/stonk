@@ -15,6 +15,7 @@
           <h5 id="{{post.price}}" class="card-title">price: {{post.price}} monies</h5>
           <h5 id="{{post.memeName}}" class="card-title">copies left: {{post.totalShares}}</h5>
           <p class="card-text">{{post.owner}}</p>
+          <p id="err" class="text-danger"></p>
           <button class="btn btn-primary btn-block" onclick="handleBuy('{{post.memeName}}')">buy</button>
         </div>
       </div>
@@ -33,6 +34,9 @@
       document.getElementById(post.memeName).innerHTML = "copies left: " + post.totalShares;
     } else {
       document.getElementById(post.memeName).innerHTML = "copies left: sold out";
+    }
+    if(data.message.length > 0){
+      document.getElementById("err").innerHTML = data.message;
     }
   }
 </script>

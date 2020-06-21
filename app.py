@@ -57,7 +57,7 @@ def register():
 
         if existing_user is None:
             hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt())
-            users.insert_one({'name': request.form['username'], 'password': hashpass})
+            users.insert_one({'name': request.form['username'], 'password': hashpass, 'monies': 25000})
             session['username'] = request.form['username']
             return redirect(url_for('index'))
 
@@ -107,13 +107,22 @@ def change_price():
 @app.route('/buy/<meme_name>', methods=['GET', 'POST'])
 def buy(meme_name):
     post = mongo.db.posts    
+    users = mongo.db.users
+    user = users.find_one({'name': session['username']})
     post_to_update = post.find_one({'memeName': meme_name})
-    if post_to_update['totalShares'] > 0:
-        post.update_one({'memeName': meme_name}, {'$inc': {'bought': 1, 'totalShares': -1}})
+    dec = post_to_update['price'] * -1
+    if post_to_update['totalShares'] > 0 and user['monies'] > post_to_update['price']:
+        post.update_one({'memeName': meme_name}, {'$inc': {'bought': 1, 'totalShares': -1} })
+        users.update_one({'name': session['username']}, {'$inc': {'monies': dec} })
+    elif user['monies'] < post_to_update['price']:
+        updated_post = post.find_one({'memeName': meme_name})
+        post_update_string = dumps(updated_post)
+        post_to_update2 = json.loads(post_update_string)    
+        return {'postToUpdate': post_to_update2, 'message': "you don't have enough monie to buy this!"}
     updated_post = post.find_one({'memeName': meme_name})
     post_update_string = dumps(updated_post)
     post_to_update2 = json.loads(post_update_string)
-    return {'postToUpdate': post_to_update2}
+    return {'postToUpdate': post_to_update2, 'message': ''}
 
 
 @app.route('/profile')

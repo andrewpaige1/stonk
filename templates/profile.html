@@ -2,4 +2,9 @@
 
 {% block body %}
 {{user}}
+<div>
+    <form method=POST action="{{ url_for('logout') }}">
+        <button type="submit" class="btn btn-danger">log out</button>
+    </form>
+    </div>
 {% endblock %}
