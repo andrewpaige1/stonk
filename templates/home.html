@@ -15,7 +15,7 @@
           <h5 id="{{post.price}}" class="card-title">price: {{post.price}} monies</h5>
           <h5 id="{{post.memeName}}" class="card-title">copies left: {{post.totalShares}}</h5>
           <p class="card-text">{{post.owner}}</p>
-          <p id="err" class="text-danger"></p>
+          <p id="{{post.memeName}}err" class="text-danger"></p>
           <button class="btn btn-primary btn-block" onclick="handleBuy('{{post.memeName}}')">buy</button>
         </div>
       </div>
@@ -29,13 +29,14 @@
     const res = await fetch('/buy/'+memeName)
     const data = await res.json()
     const post = data.postToUpdate
+    console.log(post.totalShares)
     if(post.totalShares > 0){
       document.getElementById(post.memeName).innerHTML = "copies left: " + post.totalShares;
     } else {
       document.getElementById(post.memeName).innerHTML = "copies left: sold out";
     }
     if(data.message.length > 0){
-      document.getElementById("err").innerHTML = data.message;
+      document.getElementById(post.memeName+"err").innerHTML = data.message;
     }
   }
 </script>
