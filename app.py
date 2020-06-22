@@ -111,9 +111,16 @@ def buy(meme_name):
     user = users.find_one({'name': session['username']})
     post_to_update = post.find_one({'memeName': meme_name})
     dec = post_to_update['price'] * -1
+    current_user = session['username']+'Portfolio'
+    users_portfolio = mongo.db[current_user]
     if post_to_update['totalShares'] > 0 and user['monies'] > post_to_update['price']:
         post.update_one({'memeName': meme_name}, {'$inc': {'bought': 1, 'totalShares': -1} })
         users.update_one({'name': session['username']}, {'$inc': {'monies': dec} })
+        existing_stonk = users_portfolio.find_one({'stonkInfo.stonkName': meme_name})
+        if existing_stonk is None:
+            users_portfolio.insert_one({'stonkInfo': {'stonkName': meme_name, 'amount': 1, 'stonkPrice': post_to_update['price']}})
+        elif existing_stonk != None:
+            users_portfolio.update_one({'stonkInfo.stonkName': meme_name}, {'$inc': {'stonkInfo.amount': 1}})
     elif user['monies'] < post_to_update['price']:
         updated_post = post.find_one({'memeName': meme_name})
         post_update_string = dumps(updated_post)

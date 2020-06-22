@@ -29,7 +29,6 @@
     const res = await fetch('/buy/'+memeName)
     const data = await res.json()
     const post = data.postToUpdate
-    console.log(post.totalShares)
     if(post.totalShares > 0){
       document.getElementById(post.memeName).innerHTML = "copies left: " + post.totalShares;
     } else {
