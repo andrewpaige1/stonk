@@ -4,7 +4,14 @@
 <div>
   <div class="d-flex justify-content-center" style="padding-top: 5%;">
   <div class="card text-white bg-success mb-3" style="width: 50%;">
-    <div class="card-header">{{user}}'s portfolio</div>
+    <div class="card-header">
+      <div class="d-flex justify-content-around">
+      <p class="font-weight-bold h2">{{user}}'s portfolio</p>
+    </div>
+    <div class="d-flex justify-content-around">
+      <p class="lead">monies: {{monies}}</p>
+    </div>
+    </div>
   </div>
   </div>
     {% for stonk in portfolio %}
@@ -30,7 +37,6 @@
         </div>
         </div>
     {% endfor %}
-    {{monies}}
     <form method=POST action="{{ url_for('logout') }}">
       <button type="submit" class="btn btn-danger">log out</button>
   </form>

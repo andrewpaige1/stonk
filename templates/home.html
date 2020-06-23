@@ -1,6 +1,9 @@
 {% extends "menu.html" %}
 
 {% block body %}
+<div class="sticky">
+  <h1 id="monie" class="display-4">monies: {{monies}}</h1>
+</div>
 {% for post in post_data|reverse %}
 <div style="padding-top: 5%;" class="d-flex justify-content-center">
       <div style="width: 25%;" class="card">
@@ -35,6 +38,12 @@
     if(data.message.length > 0){
       document.getElementById(post.memeName+"err").innerHTML = data.message;
     }
+    if(data.monies > -1){
+      document.getElementById("monie").innerHTML = "monies: " + data.monies;
+    }
+
   }
 </script>
+<link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
+
 {% endblock %}

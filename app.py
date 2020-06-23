@@ -26,7 +26,12 @@ def index():
         all_docs_string = dumps(all_docs)
         all_docs2 = json.loads(all_docs_string)
         #posts = os.listdir(app.config['MEME_UPLOADS'])
-        return render_template('home.html', user=session['username'], post_data=all_docs2)
+        users = mongo.db.users
+        user = users.find_one({'name': session['username']})     
+        def truncate(n):
+            return int(n * 100) / 100
+        rounded_monies = truncate(user['monies'])
+        return render_template('home.html', user=session['username'], post_data=all_docs2, monies=rounded_monies)
     return render_template('index.html')
 
 
@@ -110,6 +115,8 @@ def buy(meme_name):
     users = mongo.db.users
     user = users.find_one({'name': session['username']})
     post_to_update = post.find_one({'memeName': meme_name})
+    def truncate(n):
+        return int(n * 100) / 100
     dec = post_to_update['price'] * -1
     current_user = session['username']+'Portfolio'
     users_portfolio = mongo.db[current_user]
@@ -124,12 +131,14 @@ def buy(meme_name):
     elif user['monies'] < post_to_update['price']:
         updated_post = post.find_one({'memeName': meme_name})
         post_update_string = dumps(updated_post)
-        post_to_update2 = json.loads(post_update_string)    
-        return {'postToUpdate': post_to_update2, 'message': "you don't have enough monie to buy this!"}
+        post_to_update2 = json.loads(post_update_string)  
+        return {'postToUpdate': post_to_update2, 'message': "you don't have enough monie to buy this!", 'monies': -1}
     updated_post = post.find_one({'memeName': meme_name})
     post_update_string = dumps(updated_post)
     post_to_update2 = json.loads(post_update_string)
-    return {'postToUpdate': post_to_update2, 'message': ''}
+    updated_user = users.find_one({'name': session['username']})
+    rounded_monies = truncate(updated_user['monies'])
+    return {'postToUpdate': post_to_update2, 'message': '', 'monies': rounded_monies}
 
 
 @app.route('/profile')
@@ -140,7 +149,14 @@ def profile():
     all_buys = json.loads(all_posts_string)   
     users = mongo.db.users
     user = users.find_one({'name': session['username']})     
-    return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=user['monies'])
+    def truncate(n):
+        return int(n * 100) / 100
+    rounded_monies = truncate(user['monies'])
+    return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=rounded_monies)
+
+@app.route('/sell/<meme_name>')
+def sell(meme_name):
+    return {'status': 'sold'}
 
 
 if __name__ == '__main__':
