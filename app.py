@@ -134,7 +134,13 @@ def buy(meme_name):
 
 @app.route('/profile')
 def profile():
-    return render_template('profile.html', user=session['username'])
+    users_portfolio = mongo.db[session['username']+'Portfolio']
+    all_posts = users_portfolio.find({})
+    all_posts_string = dumps(all_posts)
+    all_buys = json.loads(all_posts_string)   
+    users = mongo.db.users
+    user = users.find_one({'name': session['username']})     
+    return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=user['monies'])
 
 
 if __name__ == '__main__':

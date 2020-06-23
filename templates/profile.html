@@ -1,10 +1,38 @@
 {% extends "menu.html" %}
 
 {% block body %}
-{{user}}
 <div>
+  <div class="d-flex justify-content-center" style="padding-top: 5%;">
+  <div class="card text-white bg-success mb-3" style="width: 50%;">
+    <div class="card-header">{{user}}'s portfolio</div>
+  </div>
+  </div>
+    {% for stonk in portfolio %}
+      <div class="accordion" id="accordionExample">
+        <div class="d-flex justify-content-center">
+        <div class="card" style="width: 50%;">
+          <div class="card-header" id="headingOne">
+            <h2 class="mb-0">
+              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                {{stonk.stonkInfo.stonkName}}
+              </button>
+            </h2>
+          </div>
+      
+          <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div class="card-body">
+              <div class="d-flex justify-content-around">
+              <p class="lead">amount of shares: {{stonk.stonkInfo.amount}}</p>
+              <p class="lead">price: {{stonk.stonkInfo.stonkPrice}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+    {% endfor %}
+    {{monies}}
     <form method=POST action="{{ url_for('logout') }}">
-        <button type="submit" class="btn btn-danger">log out</button>
-    </form>
-    </div>
+      <button type="submit" class="btn btn-danger">log out</button>
+  </form>
+  </div>
 {% endblock %}

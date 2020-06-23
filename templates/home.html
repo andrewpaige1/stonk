@@ -3,7 +3,6 @@
 {% block body %}
 {% for post in post_data|reverse %}
 <div style="padding-top: 5%;" class="d-flex justify-content-center">
-
       <div style="width: 25%;" class="card">
         <div class="card-header">
           {{post.regName}}
@@ -19,9 +18,7 @@
           <button class="btn btn-primary btn-block" onclick="handleBuy('{{post.memeName}}')">buy</button>
         </div>
       </div>
-
 </div>
-
 {% endfor %}
 <script>
   const handleBuy = async (memeName) => {

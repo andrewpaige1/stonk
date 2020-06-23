@@ -15,6 +15,11 @@ ul {
     float: right
   }
 
+  .sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+  }
 
   li a {
     display: block;
