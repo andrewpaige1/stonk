@@ -14,7 +14,7 @@
         src="{{url_for('static', filename='img/'+post.owner+'/'+post.memeName)}}" 
         alt="{{post.memeName}}">
         <div class="card-body">
-          <h5 id="{{post.price}}" class="card-title">price: {{post.price}} monies</h5>
+          <h5 id="{{post.memeName}}price" class="card-title">price: {{post.price}} monies</h5>
           <h5 id="{{post.memeName}}" class="card-title">copies left: {{post.totalShares}}</h5>
           <p class="card-text">{{post.owner}}</p>
           <p id="{{post.memeName}}err" class="text-danger"></p>
@@ -43,6 +43,21 @@
     }
 
   }
+
+
+
+  const changePrice = async (memeName) => {
+    const res = await fetch('/changePrice')
+    const data = await res.json()
+    const posts = data.allPosts
+    for(let post of posts) {
+      document.getElementById(post.memeName+"price").innerHTML = "price: " + post.price + " monies"
+    }
+  }
+
+   // setInterval(() => changePrice(), 1000*60*30);
+
+
 </script>
 <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
 

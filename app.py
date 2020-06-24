@@ -107,7 +107,30 @@ def change_price():
     all_posts = posts.find({})
     all_posts_string = dumps(all_posts)
     all_posts2 = json.loads(all_posts_string)
-    return {'status': 'sucess'}
+    for post in all_posts2:
+        buys = post['bought']
+        sells = post['sold']
+        total_trades = buys + sells
+        buy_percent = buys / total_trades
+        sell_percent = sells / total_trades 
+        if buy_percent > sell_percent:
+            inc_percent = buy_percent - 0.5
+            price_inc = inc_percent * post['price'] + post['price']
+            def truncate(n):
+                return int(n * 100) / 100
+            final_change = truncate(price_inc)
+            posts.update_one({'memeName': post['memeName']}, {'$set': {'price': final_change}})
+        elif buy_percent < sell_percent:
+            dec_percent = sell_percent - 0.5
+            price_dec = post['price'] - dec_percent * post['price']
+            def truncate(n):
+                return int(n * 100) / 100
+            final_change = truncate(price_dec)
+            posts.update_one({'memeName': post['memeName']}, {'$set': {'price': final_change}})
+    all_posts = posts.find({})
+    all_posts_string = dumps(all_posts)
+    all_posts2 = json.loads(all_posts_string)
+    return {'allPosts': all_posts2}
 
 @app.route('/buy/<meme_name>', methods=['GET', 'POST'])
 def buy(meme_name):
