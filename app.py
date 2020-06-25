@@ -172,6 +172,14 @@ def buy(meme_name):
 
 @app.route('/profile')
 def profile():
+    posts = mongo.db.posts
+    users_posts = posts.find({})
+    users_posts_string = dumps(users_posts)
+    users_posts2 = json.loads(users_posts_string)
+    final_posts = []
+    for post in users_posts2:
+        if post['owner'] == session['username']:
+            final_posts.append(post)
     users_portfolio = mongo.db[session['username']+'Portfolio']
     all_posts = users_portfolio.find({})
     all_posts_string = dumps(all_posts)
@@ -181,7 +189,7 @@ def profile():
     def truncate(n):
         return int(n * 100) / 100
     rounded_monies = truncate(user['monies'])
-    return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=rounded_monies)
+    return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=rounded_monies, usersPosts=final_posts)
 
 @app.route('/sell/<meme_name>', methods=['POST'])
 def sell(meme_name):

@@ -48,36 +48,79 @@
         </div>
         </div>
     {% endfor %}
-    <form method=POST action="{{ url_for('logout') }}">
-      <button type="submit" class="btn btn-danger">log out</button>
-  </form>
+
+  <div style="padding-top: 2.5%;" class="d-flex justify-content-center">
+    <p class="display-4">My posts</p>
+  </div>
+    {% for post in usersPosts|reverse %}
+    {% if loop.index % 3 == 1 %}
+    <div class="row w-100">
+    {% endif %}  
+    <div class="col">
+    <div style="padding-top: 2.5%;" class="d-flex justify-content-center">
+          <div style="width: 50%;" class="card">
+            <div class="card-header">
+              {{post.regName}}
+            </div>
+            <img class="card-img-top" 
+            src="{{url_for('static', filename='img/'+post.owner+'/'+post.memeName)}}" 
+            alt="{{post.memeName}}">
+            <div class="card-body">
+              <h5 id="{{post.memeName}}price" class="card-title">price: {{post.price}} monies</h5>
+              <h5 id="{{post.memeName}}" class="card-title">copies left: {{post.totalShares}}</h5>
+              <p class="card-text">{{post.owner}}</p>
+              <p id="{{post.memeName}}err" class="text-danger"></p>
+              <button class="btn btn-primary btn-block" onclick="handleBuy('{{post.memeName}}')">buy</button>
+            </div>
+          </div>
+    </div>
+    </div>
+    {% if loop.index0 % 3 == 10%}
+       </div>
+  {% endif %} 
+  {% endfor %}
   </div>
 
-  <script>
-    /*const handleSell = async (memeName) => {
-      const res = await fetch('/sell/'+memeName)
-      const data = await res.json()
-      console.log(data)
+  <form method=POST action="{{ url_for('logout') }}">
+    <button type="submit" class="btn btn-danger">log out</button>
+</form>
+
+<script>
+  const handleBuy = async (memeName) => {
+    //alert(memeName)
+    const res = await fetch('/buy/'+memeName)
+    const data = await res.json()
+    const post = data.postToUpdate
+    console.log(post.totalShares)
+    if(post.totalShares > 0){
+      document.getElementById(post.memeName).innerHTML = "copies left: " + post.totalShares;
+    } else {
+      document.getElementById(post.memeName).innerHTML = "copies left: sold out";
+    }
+    if(data.message.length > 0){
+      document.getElementById(post.memeName+"err").innerHTML = data.message;
+    }
+    if(data.monies > -1){
+      document.getElementById("monie").innerHTML = "monies: " + data.monies;
     }
 
-
-    const sell = document.querySelector('form')
-    sell.addEventListener('submit', event => {
-     event.preventDefault()
-    // calories = document.forms["reducer"]["calories"].value;
-      sellAmount = document.forms["sellForm"]["amount"].value;
-      console.log(name)
-    // calories = +calories
-    // result = reduceCalories(calories)
-     //document.getElementById("recommendation").innerHTML = result;
-     
-
-    handleSell()
-})*/
+  }
 
 
-  </script>
 
+  const changePrice = async (memeName) => {
+    const res = await fetch('/changePrice')
+    const data = await res.json()
+    const posts = data.allPosts
+    for(let post of posts) {
+      document.getElementById(post.memeName+"price").innerHTML = "price: " + post.price + " monies"
+    }
+  }
+
+   // setInterval(() => changePrice(), 1000*60*30);
+   setInterval(() => changePrice(), 1000*60);
+
+</script>
 
 
 {% endblock %}
