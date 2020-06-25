@@ -96,7 +96,7 @@ def create():
             now = datetime.datetime.now()
             meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
             posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 
-            'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
+            'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
             return redirect(url_for('index'))
         return render_template('create.html', message="meme name already exists!")
     return render_template('create.html', message="")
@@ -208,8 +208,10 @@ def sell(meme_name):
         users_portfolio.delete_one({'stonkInfo.stonkName': meme_name})
     else:
         inc_amount = stonk_info['amount'] - amount
+        inc_amount = inc_amount * -1
         users_portfolio.update_one({'stonkInfo.stonkName': meme_name}, {'$inc': {'stonkInfo.amount': inc_amount}})
     posts.update_one({'memeName': meme_name}, {'$inc': {'sold': amount}})
+    posts.update_one({'memeName': meme_name}, {'$inc': {'totalShares': amount}})
 
     return redirect(url_for('profile'))
 
