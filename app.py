@@ -96,7 +96,7 @@ def create():
             now = datetime.datetime.now()
             meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
             posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 
-            'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares, 'prevBuys': 0, 'prevSells': 0})
+            'time': now.hour, 'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
             return redirect(url_for('index'))
         return render_template('create.html', message="meme name already exists!")
     return render_template('create.html', message="")
@@ -107,12 +107,15 @@ def change_price():
     all_posts = posts.find({})
     all_posts_string = dumps(all_posts)
     all_posts2 = json.loads(all_posts_string)
+    current_user = session['username']+'Portfolio'
+    users_portfolio = mongo.db[current_user]
     for post in all_posts2:
         buys = post['bought']
         sells = post['sold']
         total_trades = buys + sells
         buy_percent = buys / total_trades
         sell_percent = sells / total_trades 
+
         if buy_percent > sell_percent:
             inc_percent = buy_percent - 0.5
             price_inc = inc_percent * post['price'] + post['price']
@@ -120,6 +123,7 @@ def change_price():
                 return int(n * 100) / 100
             final_change = truncate(price_inc)
             posts.update_one({'memeName': post['memeName']}, {'$set': {'price': final_change}})
+            users_portfolio.update_one({'stonkInfo.stonkName': post['memeName']}, {'$set': {'stonkInfo.stonkPrice': final_change}})
         elif buy_percent < sell_percent:
             dec_percent = sell_percent - 0.5
             price_dec = post['price'] - dec_percent * post['price']
@@ -127,6 +131,8 @@ def change_price():
                 return int(n * 100) / 100
             final_change = truncate(price_dec)
             posts.update_one({'memeName': post['memeName']}, {'$set': {'price': final_change}})
+            users_portfolio.update_one({'stonkInfo.stonkName': post['memeName']}, {'$set': {'stonkInfo.stonkPrice': final_change}})
+
     all_posts = posts.find({})
     all_posts_string = dumps(all_posts)
     all_posts2 = json.loads(all_posts_string)
@@ -177,9 +183,35 @@ def profile():
     rounded_monies = truncate(user['monies'])
     return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=rounded_monies)
 
-@app.route('/sell/<meme_name>')
+@app.route('/sell/<meme_name>', methods=['POST'])
 def sell(meme_name):
-    return {'status': 'sold'}
+    posts = mongo.db.posts
+    users = mongo.db.users
+    amount = request.form['amount']
+    if amount.isnumeric():
+        amount = int(amount)
+    else:
+        return redirect(url_for('profile'))
+    user = users.find_one({'name': session['username']})
+    users_portfolio = mongo.db[session['username']+'Portfolio']
+   # users.update_one({'name': session['username']}, {'$inc': {'monies': dec} })
+    stonk = users_portfolio.find_one({'stonkInfo.stonkName': meme_name})
+    stonk_info = stonk['stonkInfo']
+    if stonk_info['amount'] < amount:
+        return redirect(url_for('profile'))
+   # print(stonk_info[])
+   #<button style="width: 50%;" onclick="handleSell('{{stonk.stonkInfo.stonkName}}')" class="btn btn-danger btn-block">sell</button>
+    #users_portfolio.insert_one({'stonkInfo': {'stonkName': meme_name, 'amount': 1, 'stonkPrice': post_to_update['price']}})
+    increase_monies = stonk_info['stonkPrice'] * amount
+    users.update_one({'name': session['username']}, {'$inc': {'monies': increase_monies} })
+    if stonk_info['amount'] - amount < 1:
+        users_portfolio.delete_one({'stonkInfo.stonkName': meme_name})
+    else:
+        inc_amount = stonk_info['amount'] - amount
+        users_portfolio.update_one({'stonkInfo.stonkName': meme_name}, {'$inc': {'stonkInfo.amount': inc_amount}})
+    posts.update_one({'memeName': meme_name}, {'$inc': {'sold': amount}})
+
+    return redirect(url_for('profile'))
 
 
 if __name__ == '__main__':

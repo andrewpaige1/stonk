@@ -30,7 +30,17 @@
             <div class="card-body">
               <div class="d-flex justify-content-around">
               <p class="lead">amount of shares: {{stonk.stonkInfo.amount}}</p>
-              <button style="width: 50%;" class="btn btn-danger btn-block">sell</button>
+            
+              <form method=POST action="{{ url_for('sell', meme_name=stonk.stonkInfo.stonkName) }}">
+                <div class="field">
+                    <input type="text" class="form-control" name="amount" placeholder="enter amount to sell">
+                </div>
+                <br>
+                <div class="d-flex justify-content-center">
+                  <button type="submit" class="btn btn-primary btn-block">sell</button>
+                </div>
+              </form>
+
               <p class="lead">price: {{stonk.stonkInfo.stonkPrice}}</p>
               </div>
             </div>
@@ -42,4 +52,32 @@
       <button type="submit" class="btn btn-danger">log out</button>
   </form>
   </div>
+
+  <script>
+    /*const handleSell = async (memeName) => {
+      const res = await fetch('/sell/'+memeName)
+      const data = await res.json()
+      console.log(data)
+    }
+
+
+    const sell = document.querySelector('form')
+    sell.addEventListener('submit', event => {
+     event.preventDefault()
+    // calories = document.forms["reducer"]["calories"].value;
+      sellAmount = document.forms["sellForm"]["amount"].value;
+      console.log(name)
+    // calories = +calories
+    // result = reduceCalories(calories)
+     //document.getElementById("recommendation").innerHTML = result;
+     
+
+    handleSell()
+})*/
+
+
+  </script>
+
+
+
 {% endblock %}
