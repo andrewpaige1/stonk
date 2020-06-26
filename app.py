@@ -31,7 +31,11 @@ def index():
         def truncate(n):
             return int(n * 100) / 100
         rounded_monies = truncate(user['monies'])
-        return render_template('home.html', user=session['username'], post_data=all_docs2, monies=rounded_monies)
+        users_portfolio = mongo.db[session['username']+'Portfolio']
+        all_posts = users_portfolio.find({})
+        all_posts_string = dumps(all_posts)
+        all_buys = json.loads(all_posts_string)  
+        return render_template('home.html', user=session['username'], post_data=all_docs2, monies=rounded_monies, portfolio=all_buys)
     return render_template('index.html')
 
 
@@ -73,33 +77,36 @@ def register():
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
-    if request.method == 'POST' and 'photo' in request.files:
-        photo = request.files['photo']
-        if photo.filename == '':
-            return render_template('create.html', message="please post a valid file")
-        posts = mongo.db.posts
-        price = request.form['price']
-        try:
-            price = float(price)
-        except ValueError:
-            return render_template('create.html', message="please enter a valid number")
+    if 'username' in session:
+        if request.method == 'POST' and 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename == '':
+                return render_template('create.html', message="please post a valid file")
+            posts = mongo.db.posts
+            price = request.form['price']
+            try:
+                price = float(price)
+            except ValueError:
+                return render_template('create.html', message="please enter a valid number")
         
-        dot = photo.filename.index('.')
-        photo_type = photo.filename[dot::]
-        meme_name = request.form['memeName']
-        existing_meme = posts.find_one({'memeName': meme_name+photo_type})
-        if request.form['totalShares'].isnumeric():
-            totalShares = int(request.form['totalShares'])
-        else:
-            return render_template('create.html', message="please enter a valid number of shares")
-        if existing_meme is None:
-            now = datetime.datetime.now()
-            meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
-            posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 
-            'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
-            return redirect(url_for('index'))
-        return render_template('create.html', message="meme name already exists!")
-    return render_template('create.html', message="")
+            dot = photo.filename.index('.')
+            photo_type = photo.filename[dot::]
+            meme_name = request.form['memeName']
+            existing_meme = posts.find_one({'memeName': meme_name+photo_type})
+            if request.form['totalShares'].isnumeric():
+                totalShares = int(request.form['totalShares'])
+            else:
+                return render_template('create.html', message="please enter a valid number of shares")
+            if existing_meme is None:
+                now = datetime.datetime.now()
+                meme_folder.save(request.files['photo'], folder=session['username'],name=meme_name + '.')
+                posts.insert_one({'owner': session['username'] ,'memeName': meme_name+photo_type, 'price': price, 
+                'bought': 0, 'sold': 0, 'regName': meme_name, 'totalShares': totalShares})
+                return redirect(url_for('index'))
+            return render_template('create.html', message="meme name already exists!")
+        return render_template('create.html', message="")
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/changePrice', methods=['GET', 'POST'])
 def change_price():
@@ -172,25 +179,27 @@ def buy(meme_name):
 
 @app.route('/profile')
 def profile():
-    posts = mongo.db.posts
-    users_posts = posts.find({})
-    users_posts_string = dumps(users_posts)
-    users_posts2 = json.loads(users_posts_string)
-    final_posts = []
-    for post in users_posts2:
-        if post['owner'] == session['username']:
-            final_posts.append(post)
-    users_portfolio = mongo.db[session['username']+'Portfolio']
-    all_posts = users_portfolio.find({})
-    all_posts_string = dumps(all_posts)
-    all_buys = json.loads(all_posts_string)   
-    users = mongo.db.users
-    user = users.find_one({'name': session['username']})     
-    def truncate(n):
-        return int(n * 100) / 100
-    rounded_monies = truncate(user['monies'])
-    return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=rounded_monies, usersPosts=final_posts)
-
+    if 'username' in session:
+        posts = mongo.db.posts
+        users_posts = posts.find({})
+        users_posts_string = dumps(users_posts)
+        users_posts2 = json.loads(users_posts_string)
+        final_posts = []
+        for post in users_posts2:
+            if post['owner'] == session['username']:
+                final_posts.append(post)
+        users_portfolio = mongo.db[session['username']+'Portfolio']
+        all_posts = users_portfolio.find({})
+        all_posts_string = dumps(all_posts)
+        all_buys = json.loads(all_posts_string)   
+        users = mongo.db.users
+        user = users.find_one({'name': session['username']})     
+        def truncate(n):
+            return int(n * 100) / 100
+        rounded_monies = truncate(user['monies'])
+        return render_template('profile.html', user=session['username'], portfolio=all_buys, monies=rounded_monies, usersPosts=final_posts)
+    else:
+        return redirect(url_for('index'))
 @app.route('/sell/<meme_name>', methods=['POST'])
 def sell(meme_name):
     posts = mongo.db.posts

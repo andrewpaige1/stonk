@@ -107,19 +107,6 @@
   }
 
 
-
-  const changePrice = async (memeName) => {
-    const res = await fetch('/changePrice')
-    const data = await res.json()
-    const posts = data.allPosts
-    for(let post of posts) {
-      document.getElementById(post.memeName+"price").innerHTML = "price: " + post.price + " monies"
-    }
-  }
-
-   // setInterval(() => changePrice(), 1000*60*30);
-   setInterval(() => changePrice(), 1000*60);
-
 </script>
 
 
