@@ -231,6 +231,34 @@ def sell(meme_name):
 
     return redirect(url_for('profile'))
 
+@app.route('/indexSell/<meme_name>', methods=['POST'])
+def index_sell(meme_name):
+    posts = mongo.db.posts
+    users = mongo.db.users
+    amount = request.form['amount']
+    if amount.isnumeric():
+        amount = int(amount)
+    else:
+        return redirect(url_for('index'))
+    user = users.find_one({'name': session['username']})
+    users_portfolio = mongo.db[session['username']+'Portfolio']
+   # users.update_one({'name': session['username']}, {'$inc': {'monies': dec} })
+    stonk = users_portfolio.find_one({'stonkInfo.stonkName': meme_name})
+    stonk_info = stonk['stonkInfo']
+    if stonk_info['amount'] < amount:
+        return redirect(url_for('index'))
+    increase_monies = stonk_info['stonkPrice'] * amount
+    users.update_one({'name': session['username']}, {'$inc': {'monies': increase_monies} })
+    if stonk_info['amount'] - amount < 1:
+        users_portfolio.delete_one({'stonkInfo.stonkName': meme_name})
+    else:
+        inc_amount = stonk_info['amount'] - amount
+        inc_amount = inc_amount * -1
+        users_portfolio.update_one({'stonkInfo.stonkName': meme_name}, {'$inc': {'stonkInfo.amount': inc_amount}})
+    posts.update_one({'memeName': meme_name}, {'$inc': {'sold': amount}})
+    posts.update_one({'memeName': meme_name}, {'$inc': {'totalShares': amount}})
+
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.secret_key = 'mysecret'

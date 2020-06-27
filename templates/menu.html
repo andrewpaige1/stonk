@@ -22,8 +22,14 @@
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
     <li><a href="{{ url_for('index') }}">home</a></li>
     <li><a href="{{ url_for('create') }}">drop a meme</a></li>
-    <li style="float: right;"><a href="{{ url_for('profile') }}">profile</a></li>
-
+    <li><a href="{{ url_for('profile') }}">profile</a></li>
+    <div style="padding: 1%;">
+    <li class="float-right">
+      <form>
+        <input type="text" class="form-control" placeholder="search for meme">
+      </form>
+    </li>
+    </div>
     </ul>
 
     {% block body %}

@@ -16,7 +16,7 @@
 
 {% for post in post_data|reverse %}
     <div class="d-flex justify-content-end" style="padding-top: 5%;">
-      <div style="width: 32%;" class="card">
+      <div style="width: 35%;" class="card">
         <div class="card-header">
           {{post.regName}}
         </div>
@@ -38,11 +38,9 @@
 
 
   <div class="col-8">
-    <div style="padding-top: 10%; padding-right: 15%;">
+    <div style="padding-top: 5%; padding-right: 15%;">
     <div class="d-flex justify-content-end">
 
-
-      
 
       {% for stonk in portfolio %}
       <div class="accordion" id="accordionExample">
@@ -62,7 +60,7 @@
               <div >
               <p class="lead">amount: {{stonk.stonkInfo.amount}}</p>
               </div>
-              <form method=POST action="{{ url_for('sell', meme_name=stonk.stonkInfo.stonkName) }}">
+              <form method=POST action="{{ url_for('index_sell', meme_name=stonk.stonkInfo.stonkName) }}">
                 <div class="field" style="padding-left: 2.5%;">
                     <input type="text" class="form-control" name="amount" placeholder="enter amount to sell">
                 </div>
@@ -96,14 +94,6 @@
 
 
   </div>
-
-
-
-
-
-
-
-
 </div>
 </div>
 
