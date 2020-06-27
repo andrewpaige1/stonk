@@ -4,7 +4,48 @@
 <div class="sticky">
   <h1 id="monie" class="display-4">monies: {{monies}}</h1>
 </div>
+
+<div class="row">
+
+{% for stonk in portfolio %}
+<div class="col-12">
+<div class="accordion" id="accordionExample">
+  <div class="d-flex justify-content-end">
+  <div class="card" style="width: 35%;">
+    <div class="card-header" id="headingOne">
+      <h2 class="mb-0">
+        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          {{stonk.stonkInfo.stonkName}}
+        </button>
+      </h2>
+    </div>
+
+    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+      <div class="card-body">
+        <div class="d-flex justify-content-around">
+        <p class="lead">amount of shares: {{stonk.stonkInfo.amount}}</p>
+      
+        <form method=POST action="{{ url_for('sell', meme_name=stonk.stonkInfo.stonkName) }}">
+          <div class="field">
+              <input type="text" class="form-control" name="amount" placeholder="enter amount to sell">
+          </div>
+          <br>
+          <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary btn-block">sell</button>
+          </div>
+        </form>
+
+        <p class="lead">price: {{stonk.stonkInfo.stonkPrice}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+{% endfor %}
+
 {% for post in post_data|reverse %}
+<div class="col-12">
 <div style="padding-top: 5%;" class="d-flex justify-content-center">
       <div style="width: 25%;" class="card">
         <div class="card-header">
@@ -22,7 +63,12 @@
         </div>
       </div>
 </div>
+</div>
 {% endfor %}
+
+
+</div>
+
 <script>
   const handleBuy = async (memeName) => {
     //alert(memeName)

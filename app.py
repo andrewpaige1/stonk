@@ -25,7 +25,6 @@ def index():
         all_docs = posts.find({})
         all_docs_string = dumps(all_docs)
         all_docs2 = json.loads(all_docs_string)
-        #posts = os.listdir(app.config['MEME_UPLOADS'])
         users = mongo.db.users
         user = users.find_one({'name': session['username']})     
         def truncate(n):
