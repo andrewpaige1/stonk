@@ -260,6 +260,32 @@ def index_sell(meme_name):
 
     return redirect(url_for('index'))
 
+
+@app.route('/search', methods=['POST'])
+def search():
+    search_request = request.form['search']
+    posts = mongo.db.posts
+    all_docs = posts.find({})
+    all_docs_string = dumps(all_docs)
+    all_docs2 = json.loads(all_docs_string)
+    search_res = []
+    if search_request.isnumeric():
+        search_num = float(search_request)
+        for post in all_docs2:
+            if search_num >= post['price']:
+                search_res.append(post)
+                return render_template("search.html", search_res=search_res, user=session['username'])
+    else:
+        return redirect('index')
+    
+    for post in all_docs2:
+        if search_request in post['regName']:
+            search_res.append(post)
+        
+    return render_template("search.html", search_res=search_res, user=session['username'])
+
+
+
 if __name__ == '__main__':
     app.secret_key = 'mysecret'
     app.run(debug=True)

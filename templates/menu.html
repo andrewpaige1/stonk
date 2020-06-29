@@ -25,8 +25,8 @@
     <li><a href="{{ url_for('profile') }}">profile</a></li>
     <div style="padding: 1%;">
     <li class="float-right">
-      <form>
-        <input type="text" class="form-control" placeholder="search for meme">
+      <form method="POST" action="{{url_for('search')}}">
+        <input type="text" class="form-control" name="search" placeholder="meme name or price">
       </form>
     </li>
     </div>
