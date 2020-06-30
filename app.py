@@ -26,7 +26,9 @@ def index():
         all_docs_string = dumps(all_docs)
         all_docs2 = json.loads(all_docs_string)
         users = mongo.db.users
-        user = users.find_one({'name': session['username']})     
+        user = users.find_one({'name': session['username']})   
+        if user is None:
+            return redirect(url_for('register'))  
         def truncate(n):
             return int(n * 100) / 100
         rounded_monies = truncate(user['monies'])
