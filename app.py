@@ -60,16 +60,40 @@ def logout():
 @app.route('/register', methods=['POST', 'GET'])
 def register():
     if request.method == 'POST':
-        users = mongo.db.users
-        existing_user = users.find_one({'name': request.form['username']})
+        age = request.form['year']
+        now = datetime.datetime.now()
+        current_year = now.year
+        if len(request.form['username']) < 3:
+            return render_template('register.html', message="Username has to be more than three characters")
+        if len(request.form['pass']) < 5:
+            return render_template('register.html', message="Password should be at least 5 characters long")
+        if age.isnumeric():
+            age = int(age)
+        else:
+            return render_template('register.html', message="Please enter a valid year!")
+        day = request.form['day']
 
-        if existing_user is None:
-            hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt())
-            users.insert_one({'name': request.form['username'], 'password': hashpass, 'monies': 25000})
-            session['username'] = request.form['username']
-            return redirect(url_for('index'))
+        if day.isnumeric():
+            day = int(day)
+            if day > 31:
+                return render_template('register.html', message="Please enter a valid day!") 
+        else:
+            return render_template('register.html', message="Please enter a valid day!")
 
-        return render_template('register.html', message="This name is already taken!")
+        if current_year - age >= 13:            
+            users = mongo.db.users
+            existing_user = users.find_one({'name': request.form['username']})
+
+            if existing_user is None:
+                hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt())
+                users.insert_one({'name': request.form['username'], 'password': hashpass, 'monies': 25000})
+                session['username'] = request.form['username']
+                return redirect(url_for('index'))
+            return render_template('register.html', message="This name is already taken!")
+        elif age > current_year:
+            return render_template('register.html', message="please enter a valid year")       
+        else: 
+            return render_template('register.html', message="please do not use our site. you are underage")
 
     return render_template('register.html', message="")
 

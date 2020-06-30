@@ -5,6 +5,16 @@
   <h1 id="monie" class="display-4">monies: {{monies}}</h1>
 </div>
 
+{% if post_data|length == 0 %}
+<div class="d-flex justify-content-center">
+  <h1 class="display-4">be the first to post a meme!</h1>
+</div>
+<div class="d-flex justify-content-center">
+  <a class="h3" href="{{ url_for('create') }}">click here to get started</a>
+</div>
+{% endif %}
+
+
 <div class="container">
   <div class="row">
 <div class="d-flex justify-content-center">
@@ -12,7 +22,7 @@
 
 
 
-  <div class="col-10">
+  <div class="col-10">  
 
 {% for post in post_data|reverse %}
     <div class="d-flex justify-content-end" style="padding-top: 5%;">
@@ -131,7 +141,7 @@
     }
   }
 
-   setInterval(() => changePrice(), 1000*60*60);
+   setInterval(() => changePrice(), 1000*60*5);
 
 </script>
 <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
